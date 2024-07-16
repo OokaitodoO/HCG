@@ -4,16 +4,34 @@ class Game{
         this.context = this.canvas.getContext("2d");
         this.context.font = "30px Verdana";
         this.sprites = [];
-
+        this.states = {
+            walk: {
+                frames: [0,1,2,3,4,5,6,7],
+                loop: true,
+                motion: {x: 120, y: 0},
+                fps: 8
+            }
+        };
+        Object.freeze(this.states);
+        
         const game = this;
-        this.loadJSON("flowers", function (data, game){
+        this.loadJSON("bucket", function(data, game){
             game.spriteData = JSON.parse(data);
             game.spriteImage = new Image();
             game.spriteImage.src = game.spriteData.meta.image;
             game.spriteImage.onload = function(){
                 game.init();
+                game.refresh();
             }
         })
+        // this.loadJSON("flowers", function (data, game){
+        //     game.spriteData = JSON.parse(data);
+        //     game.spriteImage = new Image();
+        //     game.spriteImage.src = game.spriteData.meta.image;
+        //     game.spriteImage.onload = function(){
+        //         game.init();
+        //     }
+        // })
         
         
     }
@@ -39,61 +57,72 @@ class Game{
         
         const game = this;
         
-        function tap(evt) {
-            game.tap(evt);
-        }
-        
-        if('ontouchstart' in window){
-            this.canvas.addEventListener("touchstart", tap, supportPassive ? {passive:true} : false);
-        }else{
-            this.canvas.addEventListener("mousedown", tap);
-        }
+        // function tap(evt) {
+        //     game.tap(evt);
+        // }
+        //
+        // if('ontouchstart' in window){
+        //     this.canvas.addEventListener("touchstart", tap, supportPassive ? {passive:true} : false);
+        // }else{
+        //     this.canvas.addEventListener("mousedown", tap);
+        // }
     }
     
     
     
-    tap(evt){
-        const mousePos = this.getMousePos(evt);
-        
-        for(let sprite of this.sprites){
-            if(sprite.hitTest()){
-                sprite.kill = true;
-                this.score++;
-            }
-        }
-    }
+    // tap(evt){
+    //     const mousePos = this.getMousePos(evt);
+    //    
+    //     for(let sprite of this.sprites){
+    //         if(sprite.hitTest()){
+    //             sprite.kill = true;
+    //             this.score++;
+    //         }
+    //     }
+    // }
     
-    getMousePos(evt){
-        const rect = this.canvas.getBoundingClientRect();
-        const clientX = evt.targetTouches ? evt.targetTouches[0].pageX : evt.clientX;
-        const clientY = evt.targetTouches ? evt.targetTouches[0].pageY : evt.clientY;
-        
-        const canvasScale = this.canvas.width / this.canvas.offsetWidth;
-        const loc = {};
-        
-        loc.x = (clientX - rect.left) * canvasScale;
-        loc.y = (clientY - rect.top) * canvasScale;
-        
-        return loc;
-    }
+    // getMousePos(evt){
+    //     const rect = this.canvas.getBoundingClientRect();
+    //     const clientX = evt.targetTouches ? evt.targetTouches[0].pageX : evt.clientX;
+    //     const clientY = evt.targetTouches ? evt.targetTouches[0].pageY : evt.clientY;
+    //    
+    //     const canvasScale = this.canvas.width / this.canvas.offsetWidth;
+    //     const loc = {};
+    //    
+    //     loc.x = (clientX - rect.left) * canvasScale;
+    //     loc.y = (clientY - rect.top) * canvasScale;
+    //    
+    //     return loc;
+    // }
 
     spawn(){
-        const index = Math.floor(Math.random() * 5);
-        const frame = this.spriteData.frames[index].frame;
+        const frameData = this.spriteData.frames[0];
         const sprite = new Sprite({
             context: this.context,
-            x: Math.random() * this.canvas.width,
-            y: Math.random() * this.canvas.height,
-            index: index,
-            frame: frame,
+            x: 150,
+            y: 180,
+            width: frameData.sourceSize.w,
+            height: frameData.sourceSize.h,
             anchor: {x:0.5, y:0.5},
-            width: this.spriteImage.width,
-            height: this.spriteImage.height,
             image: this.spriteImage,
-            states: [{mode:"spawn", duration: 0.5}, {mode:"static", duration:1.5}, {mode:"die", duration:0.8}]
+            json: this.spriteData,
+            states: this.states,
+            state: 'walk'
+            // x: Math.random() * this.canvas.width,
+            // y: Math.random() * this.canvas.height,
+            // index: index,
+            // frame: frame,
+            // width: this.spriteImage.width,
+            // height: this.spriteImage.height,
+            // states: [{mode:"spawn", duration: 0.5}, {mode:"static", duration:1.5}, {mode:"die", duration:0.8}]
         });        
+        this.bucket = sprite;
         this.sprites.push(sprite);
         this.sinceLastSpawn = 0;
+        // this.sprites.push(sprite);
+        // this.sinceLastSpawn = 0;
+        // const index = Math.floor(Math.random() * 5);
+        // const frame = this.spriteData.frames[index].frame;
     }
 
     refresh(){
@@ -110,23 +139,23 @@ class Game{
     }
 
     update(dt){
-        this.sinceLastSpawn += dt;
-        if(this.sinceLastSpawn > 1){
-            this.spawn();
-        }
-        
-        let removed;
-        do{
-            removed = false;
-            for(let sprite of this.sprites){
-                if(sprite.kill){
-                    const index = this.sprites.indexOf(sprite);
-                    this.sprites.splice(index, 1);
-                    removed = true;
-                    break;
-                }
-            }
-        }while(removed);
+        // this.sinceLastSpawn += dt;
+        // if(this.sinceLastSpawn > 1){
+        //     this.spawn();
+        // }
+        //
+        // let removed;
+        // do{
+        //     removed = false;
+        //     for(let sprite of this.sprites){
+        //         if(sprite.kill){
+        //             const index = this.sprites.indexOf(sprite);
+        //             this.sprites.splice(index, 1);
+        //             removed = true;
+        //             break;
+        //         }
+        //     }
+        // }while(removed);
 
         for(let sprite of this.sprites){
             if(sprite==null) continue;
